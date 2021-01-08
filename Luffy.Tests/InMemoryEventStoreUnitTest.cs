@@ -70,7 +70,7 @@ namespace Luffy.Tests
     {
       var eventStore = new InMemoryEventStore();
 
-      var response= eventStore.AppendToStream(StreamState.Any, "stream-1", new List<IEventData>
+      var response = eventStore.AppendToStream(StreamState.Any, "stream-1", new List<IEventData>
       {
         new EventData
         {

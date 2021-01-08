@@ -7,14 +7,8 @@ namespace Luffy.EventStore.InMemory
 {
   public class InMemoryEventStore : IEventStore
   {
-    private readonly Stream _allEvents;
-    private readonly Dictionary<string, Stream> _eventsPerStream;
-
-    public InMemoryEventStore()
-    {
-      _allEvents = new Stream();
-      _eventsPerStream = new Dictionary<string, Stream>();
-    }
+    private readonly Stream _allEvents = new Stream();
+    private readonly Dictionary<string, Stream> _eventsPerStream = new Dictionary<string, Stream>();
 
     public bool IsEmpty()
     {
