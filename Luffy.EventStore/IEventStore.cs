@@ -11,7 +11,7 @@ namespace Luffy.EventStore
       IEnumerable<IEventData> events
     );
 
-    IEnumerable<IRecordedEvent> ReadStream(
+    public IEnumerable<IRecordedEvent> ReadStream(
       int readDirection,
       string streamId,
       UInt64 fromStreamPosition,
