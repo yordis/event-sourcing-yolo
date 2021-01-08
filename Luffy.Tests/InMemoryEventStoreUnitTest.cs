@@ -8,16 +8,17 @@ using Xunit;
 
 namespace Luffy.Tests
 {
+  [Collection("InMemory EventStore")]
   public class InMemoryStoreEventStoreUnitTest
   {
-    [Fact]
+    [Fact(DisplayName = "Creating an empty store")]
     public void creates_an_empty_event_store()
     {
       var eventStore = new InMemoryEventStore();
       Assert.True(eventStore.IsEmpty(), "event store should be empty");
     }
 
-    [Fact]
+    [Fact(DisplayName = "Appending events when the stream must be present")]
     public void appending_events_when_the_stream_must_be_present()
     {
       var eventStore = new InMemoryEventStore();
@@ -35,7 +36,7 @@ namespace Luffy.Tests
         }));
     }
 
-    [Fact]
+    [Fact(DisplayName = "Appending events when the stream must be absent")]
     public void appending_events_when_the_stream_must_be_absent()
     {
       var eventStore = new InMemoryEventStore();
@@ -65,8 +66,38 @@ namespace Luffy.Tests
         }));
     }
 
-    [Fact]
-    public void append_events_to_a_stream()
+    [Fact(DisplayName = "Appending events with a wrong expected revision")]
+    public void appending_events_with_a_wrong_expected_revision()
+    {
+      var eventStore = new InMemoryEventStore();
+
+      eventStore.AppendToStream(StreamState.Any, "stream-1",
+        new List<IEventData>
+        {
+          new EventData
+          {
+            Data = new ReadOnlyMemory<byte>(null),
+            Metadata = new ReadOnlyMemory<byte>(null),
+            EventId = Guid.NewGuid(),
+            EventType = "UserRegistered"
+          },
+        });
+
+      Assert.Throws<ExpectedStreamRevisionException>(() => eventStore.AppendToStream(Convert.ToUInt64(10), "stream-1",
+        new List<IEventData>
+        {
+          new EventData
+          {
+            Data = new ReadOnlyMemory<byte>(null),
+            Metadata = new ReadOnlyMemory<byte>(null),
+            EventId = Guid.NewGuid(),
+            EventType = "UserRegistered"
+          },
+        }));
+    }
+
+    [Fact(DisplayName = "Appending events")]
+    public void appending_events()
     {
       var eventStore = new InMemoryEventStore();
 
@@ -93,8 +124,8 @@ namespace Luffy.Tests
       Assert.Equal(expected, response.NextExpectedStreamRevision);
     }
 
-    [Fact]
-    public void read_events_from_a_stream()
+    [Fact(DisplayName = "Reading events from a stream")]
+    public void reading_events_from_a_stream()
     {
       var eventStore = new InMemoryEventStore();
 
