@@ -66,7 +66,7 @@ namespace Luffy.EventStore.InMemory
 
       return new AppendToStreamResponse
       {
-        NextExpectedStreamRevision = Convert.ToUInt64(_eventsPerStream[streamId].Count())
+        NextExpectedStreamRevision = StreamRevision.ToStreamRevision(GetStream(streamId).Count())
       };
     }
 
@@ -93,12 +93,12 @@ namespace Luffy.EventStore.InMemory
 
     private UInt64 NextGlobalEventRevision()
     {
-      return Convert.ToUInt64(_allEvents.Count());
+      return StreamRevision.ToStreamRevision(_allEvents.Count());
     }
 
     private UInt64 NextStreamEventRevision(string streamId)
     {
-      return Convert.ToUInt64(_eventsPerStream[streamId].Count());
+      return StreamRevision.ToStreamRevision(GetStream(streamId).Count());
     }
 
     private void AppendRecordedEvent(string streamId, RecordedEvent recordedEvent)

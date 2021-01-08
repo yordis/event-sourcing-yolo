@@ -83,7 +83,7 @@ namespace Luffy.Tests
           },
         });
 
-      Assert.Throws<ExpectedStreamRevisionException>(() => eventStore.AppendToStream(Convert.ToUInt64(10), "stream-1",
+      Assert.Throws<ExpectedStreamRevisionException>(() => eventStore.AppendToStream(StreamRevision.ToStreamRevision(10), "stream-1",
         new List<IEventData>
         {
           new EventData
@@ -119,7 +119,7 @@ namespace Luffy.Tests
         },
       });
 
-      var expected = Convert.ToUInt64(2);
+      var expected = StreamRevision.ToStreamRevision(2);
 
       Assert.Equal(expected, response.NextExpectedStreamRevision);
     }
@@ -157,13 +157,13 @@ namespace Luffy.Tests
       var events = eventStore.ReadStream(ReadDirection.Forwards, "cart-2", 1L, 1L);
 
       Assert.Equal("CartCreated", events.ElementAt(0).Type);
-      Assert.Equal(Convert.ToUInt64(0), events.ElementAt(0).StreamEventRevision);
+      Assert.Equal(StreamRevision.ToStreamRevision(0), events.ElementAt(0).StreamEventRevision);
 
       Assert.Equal("CartItemAdded", events.ElementAt(1).Type);
-      Assert.Equal(Convert.ToUInt64(1), events.ElementAt(1).StreamEventRevision);
+      Assert.Equal(StreamRevision.ToStreamRevision(1), events.ElementAt(1).StreamEventRevision);
 
       Assert.Equal("CartItemAdded", events.ElementAt(2).Type);
-      Assert.Equal(Convert.ToUInt64(2), events.ElementAt(2).StreamEventRevision);
+      Assert.Equal(StreamRevision.ToStreamRevision(2), events.ElementAt(2).StreamEventRevision);
     }
   }
 }
