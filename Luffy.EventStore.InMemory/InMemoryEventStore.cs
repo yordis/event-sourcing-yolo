@@ -9,11 +9,11 @@ namespace Luffy.EventStore.InMemory
   public class InMemoryEventStore : IEventStore
   {
     private readonly Stream _allEvents = new();
-    private readonly ConcurrentDictionary<string, Stream> _eventsPerStream = new();
+    private readonly EventsPerStreamDictionary _eventsPerStream = new();
 
     public bool IsEmpty()
     {
-      return _allEvents.Count == 0;
+      return _allEvents.IsEmpty();
     }
 
     public IAppendToStreamResponse AppendToStream(UInt64 expectedStreamRevision, string streamId,
@@ -89,7 +89,7 @@ namespace Luffy.EventStore.InMemory
 
     private Stream GetStream(string streamId)
     {
-      return _eventsPerStream[streamId];
+      return _eventsPerStream.GetStream(streamId);
     }
 
     private UInt64 NextGlobalEventRevision()
