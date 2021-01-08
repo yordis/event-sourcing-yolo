@@ -18,7 +18,7 @@ namespace Luffy.EventStore.InMemory
 
     public bool IsEmpty()
     {
-      return _eventsPerStream.Count == 0;
+      return _allEvents.Count == 0;
     }
 
     public IAppendToStreamResponse AppendToStream(UInt64 expectedStreamRevision, string streamId,
@@ -45,7 +45,7 @@ namespace Luffy.EventStore.InMemory
       return _allEvents;
     }
 
-    private IAppendToStreamResponse DoAppendToStream(
+    private AppendToStreamResponse DoAppendToStream(
       string streamId,
       IEnumerable<IEventData> events,
       StreamState expectedStreamState,
@@ -64,8 +64,8 @@ namespace Luffy.EventStore.InMemory
           Metadata = @event.Metadata,
           Type = @event.EventType,
           EventStreamId = streamId,
-          GlobalEventRevision = NextGlobalEventPosition(),
-          StreamEventRevision = NextStreamEventPosition(streamId),
+          GlobalEventRevision = NextGlobalEventRevision(),
+          StreamEventRevision = NextStreamEventRevision(streamId),
         });
       }
 
@@ -82,15 +82,13 @@ namespace Luffy.EventStore.InMemory
         return;
       }
 
-      var expected = expectedStreamPosition ?? NextStreamEventPosition(streamId);
-      var actual = NextStreamEventPosition(streamId);
+      var expected = expectedStreamPosition ?? NextStreamEventRevision(streamId);
+      var actual = NextStreamEventRevision(streamId);
 
-      if (expected == actual)
+      if (expected != actual)
       {
-        return;
+        throw new ExpectedStreamRevisionException(streamId, expected, actual);
       }
-
-      throw new ExpectedStreamRevisionException(streamId, expected, actual);
     }
 
     private Stream GetStream(string streamId)
@@ -98,12 +96,12 @@ namespace Luffy.EventStore.InMemory
       return _eventsPerStream[streamId];
     }
 
-    private UInt64 NextGlobalEventPosition()
+    private UInt64 NextGlobalEventRevision()
     {
       return Convert.ToUInt64(_allEvents.Count());
     }
 
-    private UInt64 NextStreamEventPosition(string streamId)
+    private UInt64 NextStreamEventRevision(string streamId)
     {
       return Convert.ToUInt64(_eventsPerStream[streamId].Count());
     }
