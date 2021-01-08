@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luffy.EventStore", "Luffy.E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luffy.CQRS", "Luffy.CQRS\Luffy.CQRS.csproj", "{AF9DC06F-C10D-45B1-AF9D-63268C78586C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luffy.EventStore.InMemory", "Luffy.EventStore.InMemory\Luffy.EventStore.InMemory.csproj", "{28D9963F-2216-4667-B9AD-777F285A159B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{AF9DC06F-C10D-45B1-AF9D-63268C78586C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF9DC06F-C10D-45B1-AF9D-63268C78586C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF9DC06F-C10D-45B1-AF9D-63268C78586C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28D9963F-2216-4667-B9AD-777F285A159B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28D9963F-2216-4667-B9AD-777F285A159B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28D9963F-2216-4667-B9AD-777F285A159B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28D9963F-2216-4667-B9AD-777F285A159B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
