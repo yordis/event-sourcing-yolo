@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Luffy.EventStore.Exceptions;
 
 namespace Luffy.EventStore.InMemory
 {
   public class InMemoryEventStore : IEventStore
   {
+    private readonly Stream _allEvents;
     private readonly Dictionary<string, Stream> _eventsPerStream;
 
     public InMemoryEventStore()
     {
+      _allEvents = new Stream();
       _eventsPerStream = new Dictionary<string, Stream>();
     }
 
@@ -18,13 +21,42 @@ namespace Luffy.EventStore.InMemory
       return _eventsPerStream.Count == 0;
     }
 
-    public IAppendToStreamResponse AppendToStream(string streamId, UInt64 expectedStreamPosition, IEnumerable<IEventData> events)
+    public IAppendToStreamResponse AppendToStream(UInt64 expectedStreamRevision, string streamId,
+      IEnumerable<IEventData> events)
     {
-      EnsureStreamExists(streamId);
+      return DoAppendToStream(streamId, events, StreamState.Any, expectedStreamRevision);
+    }
+
+    public IAppendToStreamResponse AppendToStream(StreamState expectedStreamState, string streamId,
+      IEnumerable<IEventData> events)
+    {
+      return DoAppendToStream(streamId, events, expectedStreamState, null);
+    }
+
+    public IEnumerable<IRecordedEvent> ReadStream(ReadDirection readDirection, string streamId,
+      UInt64 fromStreamRevision,
+      UInt64 howMany)
+    {
+      return _eventsPerStream[streamId];
+    }
+
+    public IEnumerable<IRecordedEvent> ReadAll(ReadDirection direction, UInt64 howMany)
+    {
+      return _allEvents;
+    }
+
+    private IAppendToStreamResponse DoAppendToStream(
+      string streamId,
+      IEnumerable<IEventData> events,
+      StreamState expectedStreamState,
+      UInt64? expectedStreamRevision)
+    {
+      EnsureStreamState(streamId, expectedStreamState);
+      EnsureStreamRevision(streamId, expectedStreamState, expectedStreamRevision);
 
       foreach (var @event in events)
       {
-        var recordedEvent = new RecordedEvent
+        AppendRecordedEvent(streamId, new RecordedEvent
         {
           EventId = Guid.NewGuid(),
           Created = DateTime.Now,
@@ -32,31 +64,74 @@ namespace Luffy.EventStore.InMemory
           Metadata = @event.Metadata,
           Type = @event.EventType,
           EventStreamId = streamId,
-          GlobalEventPosition = 1L,
-          StreamEventPosition = 1L
-        };
-
-        _eventsPerStream[streamId].Add(recordedEvent);
+          GlobalEventRevision = NextGlobalEventPosition(),
+          StreamEventRevision = NextStreamEventPosition(streamId),
+        });
       }
 
       return new AppendToStreamResponse
       {
-        NextExpectedStreamPosition = Convert.ToUInt64(_eventsPerStream[streamId].Count())
+        NextExpectedStreamRevision = Convert.ToUInt64(_eventsPerStream[streamId].Count())
       };
     }
 
-    private void EnsureStreamExists(string streamId)
+    private void EnsureStreamRevision(string streamId, StreamState expectedStreamState, UInt64? expectedStreamPosition)
     {
-      if (!_eventsPerStream.ContainsKey(streamId))
+      if (StreamState.Any == expectedStreamState && expectedStreamPosition == null)
       {
-        _eventsPerStream.Add(streamId, new Stream());
+        return;
       }
+
+      var expected = expectedStreamPosition ?? NextStreamEventPosition(streamId);
+      var actual = NextStreamEventPosition(streamId);
+
+      if (expected == actual)
+      {
+        return;
+      }
+
+      throw new ExpectedStreamRevisionException(streamId, expected, actual);
     }
 
-    public IEnumerable<IRecordedEvent> ReadStream(int readDirection, string streamId, UInt64 fromStreamPosition,
-      UInt64 howMany)
+    private Stream GetStream(string streamId)
     {
       return _eventsPerStream[streamId];
+    }
+
+    private UInt64 NextGlobalEventPosition()
+    {
+      return Convert.ToUInt64(_allEvents.Count());
+    }
+
+    private UInt64 NextStreamEventPosition(string streamId)
+    {
+      return Convert.ToUInt64(_eventsPerStream[streamId].Count());
+    }
+
+    private void AppendRecordedEvent(string streamId, RecordedEvent recordedEvent)
+    {
+      _eventsPerStream[streamId].Add(recordedEvent);
+      _allEvents.Add(recordedEvent);
+    }
+
+    private void EnsureStreamState(string streamId, StreamState expectedStreamState)
+    {
+      if (_eventsPerStream.ContainsKey(streamId))
+      {
+        if (StreamState.NoStream == expectedStreamState)
+        {
+          throw new ExpectedNoStreamException(streamId);
+        }
+
+        return;
+      }
+
+      if (StreamState.StreamExists == expectedStreamState)
+      {
+        throw new ExpectedStreamExistsException(streamId);
+      }
+
+      _eventsPerStream.Add(streamId, new Stream());
     }
   }
 }

@@ -4,5 +4,5 @@ namespace Luffy.EventStore.InMemory
 {
   public class Stream : List<RecordedEvent>
   {
-  };
+  }
 }

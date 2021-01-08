@@ -6,8 +6,8 @@ namespace Luffy.EventStore
   {
     Guid EventId { get; }
     string EventStreamId { get; }
-    UInt64 StreamEventPosition { get;  }
-    UInt64 GlobalEventPosition { get;  }
+    UInt64 StreamEventRevision { get;  }
+    UInt64 GlobalEventRevision { get;  }
     string Type { get; }
     DateTime Created { get; }
     ReadOnlyMemory<byte> Data { get; }

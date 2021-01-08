@@ -6,15 +6,26 @@ namespace Luffy.EventStore
   public interface IEventStore
   {
     public IAppendToStreamResponse AppendToStream(
+      UInt64 expectedStreamRevision,
       string streamId,
-      UInt64 expectedStreamPosition,
+      IEnumerable<IEventData> events
+    );
+
+    public IAppendToStreamResponse AppendToStream(
+      StreamState expectedStreamState,
+      string streamId,
       IEnumerable<IEventData> events
     );
 
     public IEnumerable<IRecordedEvent> ReadStream(
-      int readDirection,
+      ReadDirection readDirection,
       string streamId,
-      UInt64 fromStreamPosition,
+      UInt64 fromStreamRevision,
+      UInt64 howMany
+    );
+
+    public IEnumerable<IRecordedEvent> ReadAll(
+      ReadDirection direction,
       UInt64 howMany
     );
   }
