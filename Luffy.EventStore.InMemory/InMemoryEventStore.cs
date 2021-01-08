@@ -70,14 +70,14 @@ namespace Luffy.EventStore.InMemory
       };
     }
 
-    private void EnsureStreamRevision(string streamId, StreamState expectedStreamState, UInt64? expectedStreamPosition)
+    private void EnsureStreamRevision(string streamId, StreamState expectedStreamState, UInt64? expectedStreamRevision)
     {
-      if (StreamState.Any == expectedStreamState && expectedStreamPosition == null)
+      if (StreamState.Any == expectedStreamState && expectedStreamRevision == null)
       {
         return;
       }
 
-      var expected = expectedStreamPosition ?? NextStreamEventRevision(streamId);
+      var expected = expectedStreamRevision ?? NextStreamEventRevision(streamId);
       var actual = NextStreamEventRevision(streamId);
 
       if (expected != actual)
