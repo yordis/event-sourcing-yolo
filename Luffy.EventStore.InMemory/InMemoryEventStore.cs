@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Luffy.EventStore.Exceptions;
@@ -7,8 +8,8 @@ namespace Luffy.EventStore.InMemory
 {
   public class InMemoryEventStore : IEventStore
   {
-    private readonly Stream _allEvents = new Stream();
-    private readonly Dictionary<string, Stream> _eventsPerStream = new Dictionary<string, Stream>();
+    private readonly Stream _allEvents = new();
+    private readonly ConcurrentDictionary<string, Stream> _eventsPerStream = new();
 
     public bool IsEmpty()
     {
@@ -124,7 +125,7 @@ namespace Luffy.EventStore.InMemory
         throw new ExpectedStreamExistsException(streamId);
       }
 
-      _eventsPerStream.Add(streamId, new Stream());
+      _eventsPerStream.TryAdd(streamId, new Stream());
     }
   }
 }
