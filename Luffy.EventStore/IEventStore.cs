@@ -1,25 +1,46 @@
+using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Luffy.EventStore.Responses;
 
 namespace Luffy.EventStore
 {
+  public interface IAppendToStreamResponse
+  {
+    ulong NextExpectedStreamPosition { get; }
+  }
+
+  public interface IRecordedEvent
+  {
+    Guid EventId { get; }
+    string EventStreamId { get; }
+    ulong StreamEventPosition { get;  }
+    ulong GlobalEventPosition { get;  }
+    string Type { get; }
+    DateTime Created { get; }
+    ReadOnlyMemory<byte> Data { get; }
+    ReadOnlyMemory<byte> Metadata { get; }
+  }
+
+  public interface IEventData
+  {
+    Guid EventId { get; }
+    string EventType { get; }
+    ReadOnlyMemory<byte> Data { get; }
+    ReadOnlyMemory<byte> Metadata { get; }
+  }
+
   public interface IEventStore
   {
-    public Task<IAppendToStreamResponse> AppendToStream(
+    public IAppendToStreamResponse AppendToStream(
       string streamName,
-      StreamState expectedState,
-      IEnumerable<EventData> events,
-      CancellationToken cancellationToken
+      ulong streamRevision,
+      IEnumerable<IEventData> events
     );
 
-    Task<IReadStreamEventsResponse> ReadStream(
-      ReadDirection readDirection,
+    IRecordedEvent[] ReadStream(
+      int readDirection,
       string streamName,
-      StreamPosition revision,
-      long maxCount,
-      CancellationToken cancellationToken
+      ulong fromStreamRevision,
+      ulong howMany
     );
   }
 }
