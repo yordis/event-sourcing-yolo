@@ -31,6 +31,7 @@ namespace Luffy.EventStore.InMemory
       UInt64 fromStreamRevision,
       UInt64 howMany)
     {
+      // TODO: Use readDirection, fromStreamRevision, and howMany config
       return _eventsPerStream[streamId];
     }
 
