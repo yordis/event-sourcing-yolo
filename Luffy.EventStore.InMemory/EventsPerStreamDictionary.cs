@@ -8,5 +8,15 @@ namespace Luffy.EventStore.InMemory
     {
       return this[streamId];
     }
+
+    public void CreateStream(string streamId)
+    {
+      TryAdd(streamId, new Stream(streamId));
+    }
+
+    public bool StreamExists(string streamId)
+    {
+      return ContainsKey(streamId);
+    }
   }
 }

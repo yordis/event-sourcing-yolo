@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Luffy.EventStore.Exceptions;
@@ -8,12 +7,16 @@ namespace Luffy.EventStore.InMemory
 {
   public class InMemoryEventStore : IEventStore
   {
-    private readonly Stream _allEvents = new();
-    private readonly EventsPerStreamDictionary _eventsPerStream = new();
+    private readonly EventsPerStreamDictionary _streams = new();
 
     public bool IsEmpty()
     {
-      return _allEvents.IsEmpty();
+      return _streams.GetStream(Constants.AllStreamId).IsEmpty();
+    }
+
+    private Stream GetAllStream()
+    {
+      return _streams.GetStream(Constants.AllStreamId);
     }
 
     public IAppendToStreamResponse AppendToStream(UInt64 expectedStreamRevision, string streamId,
@@ -33,12 +36,12 @@ namespace Luffy.EventStore.InMemory
       UInt64 howMany)
     {
       // TODO: Use readDirection, fromStreamRevision, and howMany config
-      return _eventsPerStream[streamId];
+      return _streams.GetStream(streamId);
     }
 
     public IEnumerable<IRecordedEvent> ReadAll(ReadDirection direction, UInt64 howMany)
     {
-      return _allEvents;
+      return GetAllStream();
     }
 
     private AppendToStreamResponse DoAppendToStream(
@@ -89,12 +92,12 @@ namespace Luffy.EventStore.InMemory
 
     private Stream GetStream(string streamId)
     {
-      return _eventsPerStream.GetStream(streamId);
+      return _streams.GetStream(streamId);
     }
 
     private UInt64 NextGlobalEventRevision()
     {
-      return StreamRevision.ToStreamRevision(_allEvents.Count());
+      return StreamRevision.ToStreamRevision(GetAllStream().Count());
     }
 
     private UInt64 NextStreamEventRevision(string streamId)
@@ -104,13 +107,13 @@ namespace Luffy.EventStore.InMemory
 
     private void AppendRecordedEvent(string streamId, RecordedEvent recordedEvent)
     {
-      _eventsPerStream[streamId].Add(recordedEvent);
-      _allEvents.Add(recordedEvent);
+      _streams.GetStream(streamId).AppendEvent(recordedEvent);
+      GetAllStream().AppendEvent(recordedEvent);
     }
 
     private void EnsureStreamState(string streamId, StreamState expectedStreamState)
     {
-      if (_eventsPerStream.ContainsKey(streamId))
+      if (_streams.StreamExists(streamId))
       {
         if (StreamState.NoStream == expectedStreamState)
         {
@@ -125,7 +128,7 @@ namespace Luffy.EventStore.InMemory
         throw new ExpectedStreamExistsException(streamId);
       }
 
-      _eventsPerStream.TryAdd(streamId, new Stream());
+      _streams.CreateStream(streamId);
     }
   }
 }
