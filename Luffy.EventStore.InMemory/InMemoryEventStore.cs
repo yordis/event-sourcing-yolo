@@ -9,11 +9,6 @@ namespace Luffy.EventStore.InMemory
   {
     private readonly EventsPerStreamDictionary _streams = new();
 
-    public bool IsEmpty()
-    {
-      return _streams.GetStream(Constants.AllStreamId).IsEmpty();
-    }
-
     private Stream GetAllStream()
     {
       return _streams.GetStream(Constants.AllStreamId);
@@ -39,7 +34,7 @@ namespace Luffy.EventStore.InMemory
       return _streams.GetStream(streamId);
     }
 
-    public IEnumerable<IRecordedEvent> ReadAll(ReadDirection direction, UInt64 howMany)
+    public IEnumerable<IRecordedEvent> ReadAll(ReadDirection direction, UInt64 fromStreamRevision, UInt64 howMany)
     {
       return GetAllStream();
     }

@@ -35,6 +35,7 @@ namespace Luffy.EventStore
 
     public IEnumerable<IRecordedEvent> ReadAll(
       ReadDirection direction,
+      UInt64 fromStreamRevision,
       UInt64 howMany
     );
   }

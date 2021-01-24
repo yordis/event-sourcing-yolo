@@ -11,13 +11,6 @@ namespace Luffy.Tests
   [Collection("InMemory EventStore")]
   public class InMemoryStoreEventStoreUnitTest
   {
-    [Fact(DisplayName = "Creating an empty store")]
-    public void creates_an_empty_event_store()
-    {
-      var eventStore = new InMemoryEventStore();
-      Assert.True(eventStore.IsEmpty(), "event store should be empty");
-    }
-
     [Fact(DisplayName = "Appending events when the stream must be present")]
     public void appending_events_when_the_stream_must_be_present()
     {

@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 
 namespace Luffy.EventStore.InMemory
 {
-  public class Stream : BlockingCollection<IRecordedEvent>, IStream
+  public class Stream : BlockingCollection<IRecordedEvent>
   {
     private string _streamId;
 
