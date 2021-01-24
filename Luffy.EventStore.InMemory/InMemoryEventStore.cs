@@ -1,13 +1,13 @@
-﻿using System;
+﻿using System.Linq;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using Luffy.EventStore.Exceptions;
 
 namespace Luffy.EventStore.InMemory
 {
   public class InMemoryEventStore : IEventStore
   {
-    private readonly EventsPerStreamDictionary _streams = new();
+    private readonly StreamDictionary _streams = new();
 
     private Stream GetAllStream()
     {
@@ -30,13 +30,12 @@ namespace Luffy.EventStore.InMemory
       UInt64 fromStreamRevision,
       UInt64 howMany)
     {
-      // TODO: Use readDirection, fromStreamRevision, and howMany config
-      return _streams.GetStream(streamId);
+      return _streams.GetStream(streamId).FromStreamRevision(Stream.RevisionType.Stream, readDirection, fromStreamRevision, howMany);
     }
 
     public IEnumerable<IRecordedEvent> ReadAll(ReadDirection direction, UInt64 fromStreamRevision, UInt64 howMany)
     {
-      return GetAllStream();
+      return GetAllStream().GetEvents();
     }
 
     private AppendToStreamResponse DoAppendToStream(
