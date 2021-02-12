@@ -147,7 +147,7 @@ namespace Luffy.Tests
         },
       });
 
-      var events = eventStore.ReadStream(ReadDirection.Forwards, "cart-2", 1L, 1L);
+      var events = eventStore.ReadStream(ReadDirection.Forwards, "cart-2", StreamRevision.Start, StreamRevision.End);
 
       Assert.Equal("CartCreated", events.ElementAt(0).Type);
       Assert.Equal(StreamRevision.ToStreamRevision(0), events.ElementAt(0).StreamEventRevision);

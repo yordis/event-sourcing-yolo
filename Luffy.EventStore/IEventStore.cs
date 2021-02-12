@@ -29,13 +29,13 @@ namespace Luffy.EventStore
     public IEnumerable<IRecordedEvent> ReadStream(
       ReadDirection readDirection,
       string streamId,
-      UInt64 fromStreamRevision,
+      IStreamRevision fromStreamRevision,
       UInt64 howMany
     );
 
     public IEnumerable<IRecordedEvent> ReadAll(
       ReadDirection direction,
-      UInt64 fromStreamRevision,
+      IStreamRevision fromStreamRevision,
       UInt64 howMany
     );
   }

@@ -7,7 +7,13 @@ namespace Luffy.EventStore.InMemory
 {
   public class InMemoryEventStore : IEventStore
   {
-    private readonly StreamDictionary _streams = new();
+    private readonly StreamDictionary _streams;
+
+    public InMemoryEventStore()
+    {
+      _streams = new StreamDictionary();
+      _streams.CreateStream(Constants.AllStreamId);
+    }
 
     private Stream GetAllStream()
     {
@@ -27,13 +33,13 @@ namespace Luffy.EventStore.InMemory
     }
 
     public IEnumerable<IRecordedEvent> ReadStream(ReadDirection readDirection, string streamId,
-      UInt64 fromStreamRevision,
+      IStreamRevision fromStreamRevision,
       UInt64 howMany)
     {
-      return _streams.GetStream(streamId).FromStreamRevision(Stream.RevisionType.Stream, readDirection, fromStreamRevision, howMany);
+      return _streams.GetStream(streamId).FromStreamRevision(RecordedEvent.RevisionType.Stream, readDirection, fromStreamRevision, howMany);
     }
 
-    public IEnumerable<IRecordedEvent> ReadAll(ReadDirection direction, UInt64 fromStreamRevision, UInt64 howMany)
+    public IEnumerable<IRecordedEvent> ReadAll(ReadDirection direction, IStreamRevision fromStreamRevision, UInt64 howMany)
     {
       return GetAllStream().GetEvents();
     }
@@ -91,12 +97,12 @@ namespace Luffy.EventStore.InMemory
 
     private UInt64 NextGlobalEventRevision()
     {
-      return StreamRevision.ToStreamRevision(GetAllStream().Count());
+      return GetAllStream().NextStreamEventRevision();
     }
 
     private UInt64 NextStreamEventRevision(string streamId)
     {
-      return StreamRevision.ToStreamRevision(GetStream(streamId).Count());
+      return GetStream(streamId).NextStreamEventRevision();
     }
 
     private void AppendRecordedEvent(string streamId, RecordedEvent recordedEvent)

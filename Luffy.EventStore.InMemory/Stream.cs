@@ -7,11 +7,6 @@ namespace Luffy.EventStore.InMemory
 {
   public class Stream
   {
-    public enum  RevisionType
-    {
-      Global,
-      Stream
-    }
 
     private readonly List<RecordedEvent> _data;
     private readonly string _streamId;
@@ -32,7 +27,7 @@ namespace Luffy.EventStore.InMemory
       _data.Add(@event);
     }
 
-    public List<RecordedEvent> FromStreamRevision(RevisionType revisionType, ReadDirection readDirection, UInt64 streamRevision, UInt64 howMany)
+    public List<RecordedEvent> FromStreamRevision(RecordedEvent.RevisionType revisionType, ReadDirection readDirection, IStreamRevision streamRevision, UInt64 howMany)
     {
       var stream = new List<RecordedEvent>();
       var foundStreamRevisionIndex = FindStreamRevisionIndex(revisionType, streamRevision);
@@ -45,7 +40,7 @@ namespace Luffy.EventStore.InMemory
       var currentIndex = foundStreamRevisionIndex;
       var cod = readDirection == ReadDirection.Forwards ? currentIndex < _data.Count : currentIndex >= 0;
 
-      while (cod && Convert.ToUInt64(stream.Count) < howMany)
+      while (cod && Convert.ToUInt64(stream.Count) <= howMany)
       {
         stream.Add(GetEventByIndex(currentIndex));
 
@@ -62,29 +57,24 @@ namespace Luffy.EventStore.InMemory
       return stream;
     }
 
-    private int FindStreamRevisionIndex(RevisionType revisionType, UInt64 streamRevision)
+    public List<RecordedEvent> GetEvents()
     {
-      return _data.FindIndex(@event => GetRevision(revisionType, @event) == streamRevision);
+      return _data;
     }
 
-    private UInt64 GetRevision(RevisionType revisionType, RecordedEvent @event)
+    public UInt64 NextStreamEventRevision()
     {
-      if (revisionType == RevisionType.Global)
-      {
-        return @event.GlobalEventRevision;
-      }
+      return StreamRevision.ToStreamRevision(_data.Count());
+    }
 
-      return @event.StreamEventRevision;
+    private int FindStreamRevisionIndex(RecordedEvent.RevisionType revisionType, IStreamRevision streamRevision)
+    {
+      return _data.FindIndex(@event => @event.GetEventRevisionFor(revisionType) == streamRevision.Value);
     }
 
     private RecordedEvent GetEventByIndex(int index)
     {
       return _data.ElementAt(index);
-    }
-
-    public List<RecordedEvent> GetEvents()
-    {
-      return _data;
     }
   }
 }
